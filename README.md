@@ -24,7 +24,7 @@ The client includes a Progressive Web App manifest, icons, and service worker. O
 
 The [private GitHub repository](https://github.com/Gaurav-120407/daybook-expense-tracker) contains the app and its `render.yaml` deployment blueprint. To deploy:
 
-1. In MongoDB Atlas, create a free cluster, add a database user with a strong password, and allow network access from `0.0.0.0/0` so Render can reach Atlas. In **Connect → Drivers**, copy the Node.js connection string and replace its password placeholder.
+1. In MongoDB Atlas, create a free cluster and a database user with a strong password. To get the first deploy running, temporarily allow `0.0.0.0/0` under **Network Access**. After Render creates the service, copy its outbound IP ranges from **Render → service → Connect → Outbound** and replace the temporary Atlas rule with those ranges. In Atlas **Connect → Drivers**, copy the Node.js connection string and replace its password placeholder.
 2. In Render, choose **New → Blueprint**, connect GitHub if prompted, and select `Gaurav-120407/daybook-expense-tracker`.
 3. When Render asks for environment values, paste the Atlas URI as `MONGODB_URI` and set a different strong `APP_PASSWORD`. The blueprint sets `NODE_ENV=production`; the app refuses record access if hosted password protection is missing.
 4. Wait for Render to finish deploying, then open the HTTPS URL it gives you. Sign in with `APP_PASSWORD`. On Android Chrome, use **⋮ → Install app** or **Add to Home screen**.
