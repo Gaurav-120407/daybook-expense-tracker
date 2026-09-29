@@ -1,32 +1,46 @@
-# Personal Expense Tracker
+# Daybook — Personal Expense Tracker
 
-A small single-user expense tracker built with React, Vite, Express, and MongoDB.
+Daybook is a responsive personal finance app for recording expenses and seeing where money goes. The dashboard summarizes spending, and History lets you review individual months, a full year, or selected months together.
 
-## Requirements
+## Live demo
 
-- Node.js 18 or newer
-- MongoDB running locally, or a MongoDB connection URI
+[Open Daybook](https://daybook-expense-tracker.onrender.com)
 
-## Setup
+The hosted demo uses a single-user password gate and an empty MongoDB Atlas database. Ask the project owner for access to try it. Render's free service can take a little while to wake after inactivity.
 
-1. Install the root development dependency and app dependencies: `npm run install:all`
-2. Copy `server/.env.example` to `server/.env` and set `MONGODB_URI` if needed.
-3. Run `npm run dev` from the project root. It starts the local MongoDB runtime when available, then launches the API and frontend.
-4. Open the Vite URL shown in the terminal (normally `http://localhost:5173`; this computer uses `http://localhost:5174` because 5173 is occupied). The API runs on port 4000.
+## Features
 
-The API stores expense dates as `YYYY-MM-DD` calendar dates, and calculates current periods in `Asia/Kolkata`. On this computer, MongoDB data is kept under `%LOCALAPPDATA%\CodexExpenseTracker\data`, outside the project folder. If you use another computer, install MongoDB Community or provide a `MONGODB_URI`.
+- Add, edit, and delete expenses with amount, date, category, payment type, and description.
+- View daily, weekly, and monthly totals on the dashboard.
+- Filter history by month, year, or a custom selection of months.
+- Compare spending by category and payment type.
+- Responsive layout for desktop and mobile.
+- Progressive Web App manifest, icons, and service worker for Android Chrome installation.
+- Password-protected hosted records; password-free local development by default.
 
-## Install on a phone
+## Tech stack
 
-The client includes a Progressive Web App manifest, icons, and service worker. Once deployed to an HTTPS URL, open that URL in Chrome on Android and choose **Install app** or **Add to Home screen** from Chrome's menu. The app shell can open offline after its first load, but expense data still needs the API and database connection. The current localhost URL is only reachable from this computer; a phone install link requires cloud hosting.
+- React and Vite — frontend
+- Express — REST API
+- MongoDB and Mongoose — persistence
+- Render — hosting; MongoDB Atlas — hosted database
 
-## Free hosted setup
+## Run locally
 
-The [private GitHub repository](https://github.com/Gaurav-120407/daybook-expense-tracker) contains the app and its `render.yaml` deployment blueprint. To deploy:
+Requirements: Node.js 18+ and a local MongoDB Community server, or your own MongoDB URI.
 
-1. In MongoDB Atlas, create a free cluster and a database user with a strong password. To get the first deploy running, temporarily allow `0.0.0.0/0` under **Network Access**; this lets any IP attempt a database connection, so replace it promptly. After Render creates the service, copy its outbound IP ranges from **Render → service → Connect → Outbound** and replace the temporary Atlas rule with those ranges. In Atlas **Connect → Drivers**, copy the Node.js connection string and replace its password placeholder.
-2. In Render, choose **New → Blueprint**, connect GitHub if prompted, and select `Gaurav-120407/daybook-expense-tracker`.
-3. When Render asks for environment values, paste the Atlas URI as `MONGODB_URI` and set a different strong `APP_PASSWORD`. The blueprint sets `NODE_ENV=production`; the app refuses record access if hosted password protection is missing.
-4. Wait for Render to finish deploying. After narrowing the Atlas IP list, restart the Render service (**Deploys → Manual Deploy → Restart service**) so the API makes a fresh database connection. Then open the HTTPS URL Render gives you, sign in with `APP_PASSWORD`, and on Android Chrome choose **⋮ → Install app** or **Add to Home screen**.
+```bash
+npm run install:all
+npm run dev
+```
 
-The cloud database starts empty; local records are not copied. Localhost stays password-free when `APP_PASSWORD` is unset. Render's free web service may sleep while idle, so its first visit after inactivity can take a little while. Enter database and app passwords only in the providers' settings, never in GitHub.
+Open the client URL printed by Vite. The API runs on port `4000`; the local database defaults to `mongodb://127.0.0.1:27017/expense_tracker`.
+
+To use a different database, copy `server/.env.example` to `server/.env` and set `MONGODB_URI`. Local `.env` files are excluded from Git. Never commit database URIs or app passwords.
+
+## Data and security
+
+- Hosted expense records are stored in MongoDB Atlas and protected by the app password.
+- The hosted database starts empty; local records are not copied to it.
+- App and database secrets are stored in Render environment settings, not in this repository.
+- Local expense data is kept outside the repository under `%LOCALAPPDATA%\\CodexExpenseTracker\\data`.
