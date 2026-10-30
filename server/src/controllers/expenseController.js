@@ -7,7 +7,7 @@ function validateBody(body) {
   if (!Number.isFinite(amount) || amount <= 0) errors.amount = 'Enter an amount greater than zero.';
   if (typeof body.description !== 'string' || !body.description.trim()) errors.description = 'Enter a description.';
   if (!CATEGORIES.includes(body.category)) errors.category = 'Choose a valid category.';
-  if (!PAYMENT_METHODS.includes(body.paymentMethod)) errors.paymentMethod = 'Choose Online or Offline.';
+  if (!PAYMENT_METHODS.includes(body.paymentMethod)) errors.paymentMethod = 'Choose Online or Cash.';
   const parsedDate = typeof body.expenseDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.expenseDate) ? new Date(`${body.expenseDate}T00:00:00Z`) : null;
   if (!parsedDate || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== body.expenseDate) errors.expenseDate = 'Choose a valid date.';
   return { errors, value: { amount, description: body.description?.trim(), category: body.category, paymentMethod: body.paymentMethod, expenseDate: body.expenseDate } };

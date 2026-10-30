@@ -3,7 +3,7 @@ import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { createSession, deleteSession, getExpenses, getSession, getSummary } from './api/expenses';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseRow from './components/ExpenseRow';
-import { dateLabel, money, monthLabel, todayKey } from './utils/format';
+import { dateLabel, money, monthLabel, paymentMethodLabel, todayKey } from './utils/format';
 
 const categories = ['Food', 'Shopping', 'Travel', 'Other'];
 const monthNow = () => todayKey().slice(0, 7);
@@ -74,7 +74,7 @@ function Dashboard({ summary, loading, onAdd }) {
 
 function SpendingBreakdown({ payment = {}, categoryTotals = {}, periodLabel, periodText }) {
   return <><div className="section-header"><div><span className="eyebrow">A CLOSER LOOK</span><h2>Where it went</h2></div><span className="period-pill">{periodLabel}</span></div>
-    <div className="breakdown-grid"><section className="panel payment-panel"><div className="panel-title"><div className="panel-icon">↗</div><div><h3>By payment type</h3><p>How you paid {periodText}</p></div></div>{['Online', 'Offline'].map((method) => <div className="metric-line" key={method}><span><i className={`dot ${method.toLowerCase()}`} />{method}</span><b>{money(payment[method])}</b></div>)}</section>
+    <div className="breakdown-grid"><section className="panel payment-panel"><div className="panel-title"><div className="panel-icon">↗</div><div><h3>By payment type</h3><p>How you paid {periodText}</p></div></div>{['Online', 'Offline'].map((method) => <div className="metric-line" key={method}><span><i className={`dot ${method.toLowerCase()}`} />{paymentMethodLabel(method)}</span><b>{money(payment[method])}</b></div>)}</section>
       <section className="panel category-panel"><div className="panel-title"><div className="panel-icon warm">◈</div><div><h3>By category</h3><p>What you spent {periodText}</p></div></div><div className="category-list">{categories.map((category, index) => <div className="category-metric" key={category}><div><span className={`category-mark mark-${category.toLowerCase()}`}>{['◉', '◇', '↗', '○'][index]}</span><span>{category}</span></div><b>{money(categoryTotals[category])}</b></div>)}</div></section></div>
   </>;
 }
