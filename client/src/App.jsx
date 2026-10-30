@@ -67,10 +67,15 @@ function Dashboard({ summary, loading, onAdd }) {
   const month = summary?.month || monthNow();
   return <><div className="page-heading"><div><span className="eyebrow">YOUR SPENDING AT A GLANCE</span><h1>Good to see you.</h1><p>Here’s where your money went.</p></div><div className="current-month"><span>VIEWING MONTH</span><b>{monthLabel(month)}</b></div></div>
     <section className="summary-grid"><SummaryCard label="Spent today" value={summary?.today} note="TODAY SO FAR" icon="◷" loading={loading} /><SummaryCard label="This week" value={summary?.week} note="MONDAY — SUNDAY" icon="⌁" loading={loading} /><SummaryCard label="This month" value={summary?.monthTotal} note={monthLabel(month).toUpperCase()} icon="▤" featured loading={loading} /></section>
-    <div className="section-header"><div><span className="eyebrow">A CLOSER LOOK</span><h2>Where it went</h2></div><span className="period-pill">{monthLabel(month)}</span></div>
-    <div className="breakdown-grid"><section className="panel payment-panel"><div className="panel-title"><div className="panel-icon">↗</div><div><h3>By payment type</h3><p>How you paid this month</p></div></div>{['Online', 'Offline'].map((method) => <div className="metric-line" key={method}><span><i className={`dot ${method.toLowerCase()}`} />{method}</span><b>{money(summary?.payment?.[method])}</b></div>)}</section>
-      <section className="panel category-panel"><div className="panel-title"><div className="panel-icon warm">◈</div><div><h3>By category</h3><p>What you spent on this month</p></div></div><div className="category-list">{categories.map((category, index) => <div className="category-metric" key={category}><div><span className={`category-mark mark-${category.toLowerCase()}`}>{['◉', '◇', '↗', '○'][index]}</span><span>{category}</span></div><b>{money(summary?.categories?.[category])}</b></div>)}</div></section></div>
+    <SpendingBreakdown payment={summary?.payment} categoryTotals={summary?.categories} periodLabel={monthLabel(month)} periodText="this month" />
     <section className="quick-entry"><div className="quick-symbol">＋</div><div><b>Made a purchase?</b><span>Keep your records up to date while it’s fresh.</span></div><button className="button secondary" onClick={onAdd}>Add an expense <span>↗</span></button></section>
+  </>;
+}
+
+function SpendingBreakdown({ payment = {}, categoryTotals = {}, periodLabel, periodText }) {
+  return <><div className="section-header"><div><span className="eyebrow">A CLOSER LOOK</span><h2>Where it went</h2></div><span className="period-pill">{periodLabel}</span></div>
+    <div className="breakdown-grid"><section className="panel payment-panel"><div className="panel-title"><div className="panel-icon">↗</div><div><h3>By payment type</h3><p>How you paid {periodText}</p></div></div>{['Online', 'Offline'].map((method) => <div className="metric-line" key={method}><span><i className={`dot ${method.toLowerCase()}`} />{method}</span><b>{money(payment[method])}</b></div>)}</section>
+      <section className="panel category-panel"><div className="panel-title"><div className="panel-icon warm">◈</div><div><h3>By category</h3><p>What you spent {periodText}</p></div></div><div className="category-list">{categories.map((category, index) => <div className="category-metric" key={category}><div><span className={`category-mark mark-${category.toLowerCase()}`}>{['◉', '◇', '↗', '○'][index]}</span><span>{category}</span></div><b>{money(categoryTotals[category])}</b></div>)}</div></section></div>
   </>;
 }
 
@@ -83,8 +88,14 @@ function History({ filter, setFilter, expenses, grouped, loading, loadError, onE
   const [draftMonths, setDraftMonths] = useState([]);
   const month = filter.type === 'month' ? filter.month : monthNow();
   const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const breakdownTotals = expenses.reduce((totals, expense) => {
+    totals.payment[expense.paymentMethod] = (totals.payment[expense.paymentMethod] || 0) + expense.amount;
+    totals.categories[expense.category] = (totals.categories[expense.category] || 0) + expense.amount;
+    return totals;
+  }, { payment: { Online: 0, Offline: 0 }, categories: Object.fromEntries(categories.map((category) => [category, 0])) });
   const selectedMonthsLabel = filter.type === 'months' ? filter.months.length ? `${filter.months.length} ${filter.months.length === 1 ? 'month' : 'months'} selected` : 'Select months' : '';
   const periodLabel = filter.type === 'month' ? monthLabel(filter.month) : filter.type === 'year' ? `Calendar year ${yearNow()}` : selectedMonthsLabel;
+  const breakdownPeriodText = filter.type === 'month' ? `in ${monthLabel(filter.month)}` : filter.type === 'year' ? `during ${yearNow()}` : 'across selected months';
   const openPicker = () => {
     setPickerYear(filter.type === 'month' ? Number(filter.month.slice(0, 4)) : yearNow());
     setDraftMonths(filter.type === 'months' ? [...filter.months] : [filter.type === 'month' ? filter.month : monthNow()]);
@@ -100,6 +111,7 @@ function History({ filter, setFilter, expenses, grouped, loading, loadError, onE
     </div>
     {pickerOpen && <div className="month-picker"><div className="picker-heading"><b>Choose months</b><button className="icon-button" onClick={() => setPickerOpen(false)} aria-label="Close month picker">×</button></div><div className="picker-year"><button onClick={() => setPickerYear((year) => year - 1)} aria-label="Previous year">‹</button><b>{pickerYear}</b><button onClick={() => setPickerYear((year) => year + 1)} aria-label="Next year">›</button></div><div className="month-options">{Array.from({ length: 12 }, (_, index) => { const key = `${pickerYear}-${String(index + 1).padStart(2, '0')}`; const name = new Intl.DateTimeFormat('en', { month: 'short', timeZone: 'UTC' }).format(new Date(`${key}-01T00:00:00Z`)); return <label key={key} className={draftMonths.includes(key) ? 'checked' : ''}><input type="checkbox" checked={draftMonths.includes(key)} onChange={() => toggleDraftMonth(key)} /><span>{name}</span></label>; })}</div><div className="picker-footer"><span>{draftMonths.length} selected</span><button className="button primary" onClick={applyMonths} disabled={!draftMonths.length}>Apply</button></div></div>}</div>
     <section className="history-total"><div><span className="eyebrow">TOTAL SPENT · {periodLabel.toUpperCase()}</span><strong>{money(total)}</strong><span>{expenses.length} {expenses.length === 1 ? 'expense' : 'expenses'} recorded</span></div><div className="total-decoration">₹</div></section>
+    {!loading && !loadError && !(filter.type === 'months' && filter.months.length === 0) && <SpendingBreakdown payment={breakdownTotals.payment} categoryTotals={breakdownTotals.categories} periodLabel={periodLabel} periodText={breakdownPeriodText} />}
     <div className="history-toolbar"><div><span className="eyebrow">YOUR RECORD</span><h2>Expenses by day</h2></div><span className="period-pill">{periodLabel}</span></div>
     {loading && <div className="empty-state">Loading your history…</div>}
     {!loading && !loadError && filter.type === 'months' && filter.months.length === 0 && <div className="empty-state"><div className="empty-art">▦</div><h3>Choose the months to view.</h3><p>Select one or more months to see their combined total and history.</p><button className="button secondary" onClick={openPicker}>Select months</button></div>}
